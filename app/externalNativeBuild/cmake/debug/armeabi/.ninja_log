@@ -1,0 +1,17 @@
+# ninja log v5
+1	192	0	CMakeFiles/native-lib.dir/src/main/cpp/native-lib.cpp.o	90efeac609155ed9
+192	384	0	../../../../build/intermediates/cmake/debug/obj/armeabi/libnative-lib.so	687b31c8384c6a3d
+0	383	0	CMakeFiles/uninstall.dir/src/main/cpp/uninstall.cpp.o	156b9dc272b8ca45
+384	721	0	../../../../build/intermediates/cmake/debug/obj/armeabi/libuninstall.so	7f142b4cdfd5549
+0	272	0	CMakeFiles/uninstall.dir/src/main/cpp/uninstall.cpp.o	156b9dc272b8ca45
+272	642	0	../../../../build/intermediates/cmake/debug/obj/armeabi/libuninstall.so	7f142b4cdfd5549
+1	232	0	CMakeFiles/uninstall.dir/src/main/cpp/uninstall.cpp.o	156b9dc272b8ca45
+232	376	0	../../../../build/intermediates/cmake/debug/obj/armeabi/libuninstall.so	7f142b4cdfd5549
+0	287	0	CMakeFiles/uninstall.dir/src/main/cpp/uninstall.cpp.o	156b9dc272b8ca45
+287	583	0	../../../../build/intermediates/cmake/debug/obj/armeabi/libuninstall.so	7f142b4cdfd5549
+1	223	0	CMakeFiles/uninstall.dir/src/main/cpp/uninstall.cpp.o	156b9dc272b8ca45
+224	361	0	../../../../build/intermediates/cmake/debug/obj/armeabi/libuninstall.so	7f142b4cdfd5549
+0	241	0	CMakeFiles/uninstall.dir/src/main/cpp/uninstall.cpp.o	156b9dc272b8ca45
+241	333	0	../../../../build/intermediates/cmake/debug/obj/armeabi/libuninstall.so	7f142b4cdfd5549
+1	229	0	CMakeFiles/uninstall.dir/src/main/cpp/uninstall.cpp.o	156b9dc272b8ca45
+229	375	0	../../../../build/intermediates/cmake/debug/obj/armeabi/libuninstall.so	7f142b4cdfd5549

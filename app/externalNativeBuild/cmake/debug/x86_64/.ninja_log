@@ -1,0 +1,17 @@
+# ninja log v5
+0	331	0	CMakeFiles/native-lib.dir/src/main/cpp/native-lib.cpp.o	aa1a3932dec6e096
+331	610	0	../../../../build/intermediates/cmake/debug/obj/x86_64/libnative-lib.so	964c00326ac5294f
+1	387	0	CMakeFiles/uninstall.dir/src/main/cpp/uninstall.cpp.o	ec91619ce72ef9ce
+387	585	0	../../../../build/intermediates/cmake/debug/obj/x86_64/libuninstall.so	22aa29bf19245e40
+1	391	0	CMakeFiles/uninstall.dir/src/main/cpp/uninstall.cpp.o	ec91619ce72ef9ce
+391	599	0	../../../../build/intermediates/cmake/debug/obj/x86_64/libuninstall.so	22aa29bf19245e40
+0	2927	0	CMakeFiles/uninstall.dir/src/main/cpp/uninstall.cpp.o	ec91619ce72ef9ce
+2927	3259	0	../../../../build/intermediates/cmake/debug/obj/x86_64/libuninstall.so	22aa29bf19245e40
+0	370	0	CMakeFiles/uninstall.dir/src/main/cpp/uninstall.cpp.o	ec91619ce72ef9ce
+370	578	0	../../../../build/intermediates/cmake/debug/obj/x86_64/libuninstall.so	22aa29bf19245e40
+0	391	0	CMakeFiles/uninstall.dir/src/main/cpp/uninstall.cpp.o	ec91619ce72ef9ce
+392	620	0	../../../../build/intermediates/cmake/debug/obj/x86_64/libuninstall.so	22aa29bf19245e40
+1	194	0	CMakeFiles/uninstall.dir/src/main/cpp/uninstall.cpp.o	ec91619ce72ef9ce
+194	290	0	../../../../build/intermediates/cmake/debug/obj/x86_64/libuninstall.so	22aa29bf19245e40
+1	695	0	CMakeFiles/uninstall.dir/src/main/cpp/uninstall.cpp.o	ec91619ce72ef9ce
+695	1442	0	../../../../build/intermediates/cmake/debug/obj/x86_64/libuninstall.so	22aa29bf19245e40

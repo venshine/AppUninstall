@@ -1,0 +1,17 @@
+# ninja log v5
+0	353	0	CMakeFiles/native-lib.dir/src/main/cpp/native-lib.cpp.o	43ae928edde33976
+353	575	0	../../../../build/intermediates/cmake/debug/obj/mips/libnative-lib.so	ecbb734bc5ce9d89
+0	536	0	CMakeFiles/uninstall.dir/src/main/cpp/uninstall.cpp.o	f79358e9d006a0da
+536	646	0	../../../../build/intermediates/cmake/debug/obj/mips/libuninstall.so	ab4caa190f9cd3d2
+1	1380	0	CMakeFiles/uninstall.dir/src/main/cpp/uninstall.cpp.o	f79358e9d006a0da
+1380	1491	0	../../../../build/intermediates/cmake/debug/obj/mips/libuninstall.so	ab4caa190f9cd3d2
+1	431	0	CMakeFiles/uninstall.dir/src/main/cpp/uninstall.cpp.o	f79358e9d006a0da
+431	542	0	../../../../build/intermediates/cmake/debug/obj/mips/libuninstall.so	ab4caa190f9cd3d2
+1	843	0	CMakeFiles/uninstall.dir/src/main/cpp/uninstall.cpp.o	f79358e9d006a0da
+843	951	0	../../../../build/intermediates/cmake/debug/obj/mips/libuninstall.so	ab4caa190f9cd3d2
+1	432	0	CMakeFiles/uninstall.dir/src/main/cpp/uninstall.cpp.o	f79358e9d006a0da
+432	558	0	../../../../build/intermediates/cmake/debug/obj/mips/libuninstall.so	ab4caa190f9cd3d2
+0	258	0	CMakeFiles/uninstall.dir/src/main/cpp/uninstall.cpp.o	f79358e9d006a0da
+258	328	0	../../../../build/intermediates/cmake/debug/obj/mips/libuninstall.so	ab4caa190f9cd3d2
+1	417	0	CMakeFiles/uninstall.dir/src/main/cpp/uninstall.cpp.o	f79358e9d006a0da
+417	520	0	../../../../build/intermediates/cmake/debug/obj/mips/libuninstall.so	ab4caa190f9cd3d2

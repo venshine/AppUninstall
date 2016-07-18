@@ -1,0 +1,1 @@
+D:/work/AndroidStudioProjects/my/AppUninstall/app/externalNativeBuild/cmake/debug/mips/CMakeFiles/uninstall.dir

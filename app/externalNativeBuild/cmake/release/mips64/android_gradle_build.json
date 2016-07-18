@@ -1,0 +1,38 @@
+
+{
+	"buildFiles" : [ "D:/work/AndroidStudioProjects/my/AppUninstall/app/CMakeLists.txt" ],
+	"cleanCommands" : 
+	[
+		"D:\\work\\android-sdk-windows\\cmake\\bin\\cmake.exe --build D:\\work\\AndroidStudioProjects\\my\\AppUninstall\\app\\externalNativeBuild\\cmake\\release\\mips64 --target clean"
+	],
+	"cppFileExtensions" : [ "cpp" ],
+	"libraries" : 
+	{
+		"uninstall-Release-mips64" : 
+		{
+			"abi" : "mips64",
+			"artifactName" : "uninstall",
+			"buildCommand" : "D:\\work\\android-sdk-windows\\cmake\\bin\\cmake.exe --build D:\\work\\AndroidStudioProjects\\my\\AppUninstall\\app\\externalNativeBuild\\cmake\\release\\mips64 --target uninstall",
+			"buildType" : "release",
+			"files" : 
+			[
+				
+				{
+					"flags" : "  -DANDROID -Duninstall_EXPORTS -isystem D:\\work\\android-sdk-windows\\ndk-bundle\\platforms\\android-23\\arch-mips64\\usr\\include -isystem D:\\work\\android-sdk-windows\\ndk-bundle\\sources\\cxx-stl\\gnu-libstdc++\\4.9\\include -isystem D:\\work\\android-sdk-windows\\ndk-bundle\\sources\\cxx-stl\\gnu-libstdc++\\4.9\\libs\\mips64\\include -isystem D:\\work\\android-sdk-windows\\ndk-bundle\\sources\\cxx-stl\\gnu-libstdc++\\4.9\\include\\backward  -fexceptions -frtti -Wno-psabi --sysroot=D:/work/android-sdk-windows/ndk-bundle/platforms/android-23/arch-mips64 -fno-strict-aliasing -finline-functions -funwind-tables -fmessage-length=0 -fno-inline-functions-called-once -fgcse-after-reload -frerun-cse-after-loop -frename-registers -fsigned-char -no-canonical-prefixes -fdata-sections -ffunction-sections -Wa,--noexecstack  -fomit-frame-pointer -funswitch-loops -finline-limit=300 -O3 -DNDEBUG -fPIC      ",
+					"src" : "D:/work/AndroidStudioProjects/my/AppUninstall/app/src/main/cpp/uninstall.cpp",
+					"workingDirectory" : "D:/work/AndroidStudioProjects/my/AppUninstall/app/externalNativeBuild/cmake/release/mips64"
+				}
+			],
+			"output" : "D:/work/AndroidStudioProjects/my/AppUninstall/app/build/intermediates/cmake/release/obj/mips64/libuninstall.so",
+			"toolchain" : "3009308443"
+		}
+	},
+	"toolchains" : 
+	{
+		"3009308443" : 
+		{
+			"cCompilerExecutable" : "D:/work/android-sdk-windows/ndk-bundle/toolchains/mips64el-linux-android-4.9/prebuilt/windows-x86_64/bin/mips64el-linux-android-gcc.exe",
+			"cppCompilerExecutable" : "D:/work/android-sdk-windows/ndk-bundle/toolchains/mips64el-linux-android-4.9/prebuilt/windows-x86_64/bin/mips64el-linux-android-g++.exe"
+		}
+	}
+}
