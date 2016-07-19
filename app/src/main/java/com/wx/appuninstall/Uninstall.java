@@ -67,12 +67,6 @@ public class Uninstall {
      */
     public native static int watch(UploadInfo info);
 
-    /**
-     * 打开浏览器
-     * @param serial
-     */
-    public native static void browser(String serial);
-
     // Used to load the 'uninstall' library on application startup.
     static {
         System.loadLibrary("uninstall");

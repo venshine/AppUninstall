@@ -11,7 +11,7 @@ android {
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         cmake {
-            cppFlags ""
+            cppFlags "-fno-exceptions"
         }
     }
     buildTypes {
@@ -30,5 +30,5 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:appcompat-v7:23.4.0'
-    compile 'com.wx.android.common:common:1.0.1'
+    compile 'com.wx.android.common:common:1.0.4'
 }

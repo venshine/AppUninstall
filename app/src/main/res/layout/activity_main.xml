@@ -10,8 +10,8 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="30dp"
-        android:text="Hello World!"/>
+        android:layout_margin="20dp"
+        android:text="App卸载监听，支持Android4.0+"/>
 
     <Button
         android:id="@+id/watch"
@@ -21,15 +21,6 @@
         android:gravity="center"
         android:onClick="watch"
         android:text="watch"/>
-
-    <Button
-        android:id="@+id/browser"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="20dp"
-        android:gravity="center"
-        android:onClick="browser"
-        android:text="browser"/>
 
     <Button
         android:id="@+id/uninstall"

@@ -15,16 +15,11 @@
  */
 package com.wx.appuninstall;
 
-import android.content.Context;
-import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
 import com.wx.android.common.util.PackageUtils;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 /**
  * Demo
@@ -43,38 +38,8 @@ public class MainActivity extends AppCompatActivity {
         Uninstall.getInstance(this);
     }
 
-    public void browser(View view) {
-        Uninstall.browser(getUserSerial());
-    }
-
     public void uninstall(View view) {
         PackageUtils.uninstall(this, getPackageName());
-    }
-
-    // 由于targetSdkVersion低于17，只能通过反射获取
-    @Nullable
-    private String getUserSerial() {
-        Object userManager = getSystemService(Context.USER_SERVICE);
-        if (userManager == null) {
-            return null;
-        }
-        try {
-            Method myUserHandleMethod = android.os.Process.class.getMethod(
-                    "myUserHandle", (Class<?>[]) null);
-            Object myUserHandle = myUserHandleMethod.invoke(
-                    android.os.Process.class, (Object[]) null);
-
-            Method getSerialNumberForUser = userManager.getClass().getMethod(
-                    "getSerialNumberForUser", myUserHandle.getClass());
-            long userSerial = (Long) getSerialNumberForUser.invoke(userManager,
-                    myUserHandle);
-            return String.valueOf(userSerial);
-        } catch (NoSuchMethodException e) {
-        } catch (IllegalArgumentException e) {
-        } catch (IllegalAccessException e) {
-        } catch (InvocationTargetException e) {
-        }
-        return null;
     }
 
 }

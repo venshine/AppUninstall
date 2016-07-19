@@ -1,3 +1,18 @@
+/*
+ * Copyright (C) 2016 venshine.cn@gmail.com
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 #include <jni.h>
 #include <string>
 #include <stdlib.h>
@@ -58,35 +73,6 @@ int isProcessAlive(const char *pid);
  */
 void writePidFile(const char *pid);
 
-void Java_com_baidu_testuninstall_Monitor_open(JNIEnv *env, jobject thiz, jstring userSerial) {
-//    if (userSerial == NULL) {
-//        // 执行命令am start -a android.intent.action.VIEW -d $(url)
-//        execlp("am", "am", "start", "-a", "android.intent.action.VIEW", "-d", "http://www.baidu.com", (char *) NULL);
-//    }
-//    else {
-//        // 执行命令am start --user userSerial -a android.intent.action.VIEW -d $(url)
-//        execlp("am", "am", "start", "--user", env->GetStringUTFChars(userSerial, &isCopy), "-a",
-//               "android.intent.action.VIEW", "-d", "http://www.baidu.com", (char *) NULL);
-//    }
-//    uploadStatData();
-//    execlp("am", "am", "start","--user", "0" ,"-a", "android.intent.action.VIEW", "-d", "http://www.baidu.com", (char *)NULL);
-}
-
-/**
- * 打开浏览器
- */
-void Java_com_wx_appuninstall_Uninstall_browser(JNIEnv *env, jobject thiz, jstring serial) {
-    if (serial == NULL) {
-        // 执行命令am start -a android.intent.action.VIEW -d $(url)
-        execlp("am", "am", "start", "-a", "android.intent.action.VIEW", "-d", SERVER_ADDR, (char *) NULL);
-    }
-    else {
-        // 执行命令am start --user userSerial -a android.intent.action.VIEW -d $(url)
-        execlp("am", "am", "start", "--user", env->GetStringUTFChars(serial, &isCopy), "-a",
-               "android.intent.action.VIEW", "-d", SERVER_ADDR, (char *) NULL);
-    }
-}
-
 /**
  * 监控程序
  */
@@ -136,7 +122,7 @@ jint Java_com_wx_appuninstall_Uninstall_watch(
         setsid();  // 将进程和它当前的对话过程和进程组分离开，并且把它设置成一个新的对话过程的领头进程。
         umask(0);  // 为文件赋予更多的权限，因为继承来的文件可能某些权限被屏蔽
         int pid = fork();
-        prctl(PR_SET_NAME, "j.k.l.uninstall");
+//        prctl(PR_SET_NAME, "j.k.l.uninstall");
         if (pid == 0) { // 第二个子进程
             // 保存监听进程id
             LOGD("fork second process succ pid = %d", getpid());
