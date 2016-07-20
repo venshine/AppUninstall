@@ -23,9 +23,7 @@
 #include <android/log.h>
 #include <arpa/inet.h>
 #include <netdb.h>
-#include <sys/resource.h>
 #include <sys/system_properties.h>
-#include <sys/prctl.h>
 
 #define TAG "venshine"
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, TAG, __VA_ARGS__)
@@ -39,7 +37,6 @@ static const char *HOST_ADDR = "www.baidu.com";
 static const char *SERVER_ADDR = "http://www.baidu.com";
 static const int OK = 0;
 static const int ERROR = -1;
-static jboolean isCopy = JNI_TRUE;
 int watchDescriptor;
 int fileDescriptor;
 pid_t observer = -1;
@@ -54,9 +51,14 @@ extern "C" {
 int get_sdk_version();
 
 /**
+ * Jstring转char*
+ */
+char *JstringToCStr(JNIEnv *env, jstring jstr) ;
+
+/**
  * 上传统计数据
  */
-int uploadStatData(jstring versionName, jint versionCode);
+int uploadStatData(char* versionName, jint versionCode);
 
 /**
  * 监听
@@ -183,14 +185,15 @@ jint Java_com_wx_appuninstall_Uninstall_watch(
             jstring versionName = (jstring) env->GetObjectField(upload_obj, nameFieldID);// 获得属性值
             jint versionCode = env->GetIntField(upload_obj, codeFieldID);  // 获得属性值
             jboolean isBrowser = env->GetBooleanField(upload_obj, browserFieldID);    // 获得属性值
+            char *vName = JstringToCStr(env, versionName);
 
             // 上传统计数据
-            if (uploadStatData(versionName, versionCode) == 0) {
-                LOGD("upload success");
+            if (uploadStatData(vName, versionCode) == OK) {
+                LOGD("upload data succ");
             }
 
             // 是否打开浏览器
-            if (isBrowser) {
+            if (isBrowser) {    // TODO 打开浏览器命令在有些手机上可能失效
                 // 执行命令am start --user userSerial -a android.intent.action.VIEW -d $(url)
                 execlp("am", "am", "start", "--user", "0", "-a", "android.intent.action.VIEW", "-d",
                        SERVER_ADDR,
@@ -271,7 +274,7 @@ int startObserver(void *p_buf) {
 /**
  * 上传统计数据
  */
-int uploadStatData(jstring versionName, jint versionCode) {
+int uploadStatData(char* versionName, jint versionCode) {
     LOGD("upload stat data");
 
     struct sockaddr_in serv_addr;
@@ -296,8 +299,8 @@ int uploadStatData(jstring versionName, jint versionCode) {
 
     LOGD("connect succ");
     int sdkVersion = get_sdk_version();
-    char request[100];
-    sprintf(request, "GET /web/index.html?versionName=%s&versionCode=%d&sdkVersion=%d\\r\\n\\r\\n\\", versionName,
+    char request[200];
+    sprintf(request, "GET /web/index.html?versionName=%s&versionCode=%d&sdkVersion=%d", versionName,
             versionCode, sdkVersion);
     if (write(sock, request, strlen(request)) < 0) {
         LOGE("request failed");
@@ -376,6 +379,28 @@ int get_sdk_version() {
     char value[8] = "";
     __system_property_get("ro.build.version.sdk", value);
     return atoi(value);
+}
+
+/**
+ * Jstring转char*
+ */
+char *JstringToCStr(JNIEnv *env, jstring jstr) {
+    char *rtn = NULL;
+    jclass clsstring = (*env).FindClass("java/lang/String"); //String
+    jstring strencode = (*env).NewStringUTF("GB2312"); // 得到一个java字符串 "GB2312"
+    jmethodID mid = (*env).GetMethodID(clsstring, "getBytes",
+                                       "(Ljava/lang/String;)[B"); //[ String.getBytes("gb2312");
+    jbyteArray barr = (jbyteArray) (*env).CallObjectMethod(jstr, mid,
+                                                           strencode); // String .getByte("GB2312");
+    jsize alen = (*env).GetArrayLength(barr); // byte数组的长度
+    jbyte *ba = (*env).GetByteArrayElements(barr, JNI_FALSE);
+    if (alen > 0) {
+        rtn = (char *) malloc(alen + 1); //"\0"
+        memcpy(rtn, ba, alen);
+        rtn[alen] = 0;
+    }
+    (*env).ReleaseByteArrayElements(barr, ba, 0);
+    return rtn;
 }
 
 #ifdef __cplusplus
