@@ -8,7 +8,7 @@
 5. C进程轮询，监听/data/data/{package-name}目录是否存在：目前业界普遍采用的方案。
 
 ## 原理
-从前四种方案可以看到，单纯的Java层代码是无法监听自身卸载的。既然Java层无法实现，我们试着使用C语言在底层实现。借助Java层进程fork出来的C进程在应用被卸载后不会被销毁，监听/data/data/{package-name}目录是否存在，如果不存在，就证明应用被卸载了。  
+从前四种方案可以看到，单纯的Java层代码是无法监听自身卸载的。既然Java层无法实现，我们试着使用C语言在底层实现。借助Linux进程fork出来的C进程在应用被卸载后不会被销毁，监听/data/data/{package-name}目录是否存在，如果不存在，就证明应用被卸载了。  
 
 本程序采用第5种解决方案，对其进行优化，通过linux中的[inotify](http://man7.org/linux/man-pages/man7/inotify.7.html)机制来监听应用的卸载。
 
