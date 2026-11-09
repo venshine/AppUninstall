@@ -16,8 +16,9 @@
 package com.wx.appuninstall;
 
 import android.content.Context;
-
-import com.wx.android.common.util.AppUtils;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.os.Build;
 
 /**
  * 卸载
@@ -53,8 +54,14 @@ public class Uninstall {
      */
     private static UploadInfo create(Context context) {
         UploadInfo uploadInfo = new UploadInfo();
-        uploadInfo.setVersionCode(AppUtils.getVersionCode(context));
-        uploadInfo.setVersionName(AppUtils.getVersionName(context));
+        try {
+            PackageInfo info = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+            uploadInfo.setVersionCode(Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
+                    ? (int) info.getLongVersionCode() : info.versionCode);
+            uploadInfo.setVersionName(info.versionName);
+        } catch (PackageManager.NameNotFoundException e) {
+            uploadInfo.setVersionName("");
+        }
         uploadInfo.setBrowser(true);
         return uploadInfo;
     }

@@ -11,7 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="20dp"
-        android:text="App卸载监听，支持Android4.0+"/>
+        android:text="App卸载监听（2016 年技术演示，现代 Android 上原理已失效）"/>
 
     <Button
         android:id="@+id/watch"

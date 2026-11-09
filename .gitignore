@@ -41,7 +41,6 @@ build-log.xml
 ### Gradle ###
 build/
 .gradle
-gradle.properties
 
 # Ignore Gradle GUI config
 gradle-app.setting
@@ -51,3 +50,11 @@ gradle-app.setting
 
 # Cache of project
 .gradletasknamecache
+
+.externalNativeBuild
+.cxx
+
+# 私有内容与临时文件
+.private/
+.tmp/
+.kotlin/

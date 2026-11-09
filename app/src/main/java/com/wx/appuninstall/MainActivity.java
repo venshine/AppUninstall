@@ -15,11 +15,12 @@
  */
 package com.wx.appuninstall;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
-import com.wx.android.common.util.PackageUtils;
+import androidx.appcompat.app.AppCompatActivity;
 
 /**
  * Demo
@@ -38,8 +39,11 @@ public class MainActivity extends AppCompatActivity {
         Uninstall.getInstance(this);
     }
 
+    @SuppressWarnings("deprecation") // ACTION_UNINSTALL_PACKAGE 自 API 29 起标记弃用，演示用途
     public void uninstall(View view) {
-        PackageUtils.uninstall(this, getPackageName());
+        // 触发系统卸载确认页（targetSdk 28+ 需在清单声明 REQUEST_DELETE_PACKAGES）
+        Intent intent = new Intent(Intent.ACTION_UNINSTALL_PACKAGE, Uri.parse("package:" + getPackageName()));
+        startActivity(intent);
     }
 
 }

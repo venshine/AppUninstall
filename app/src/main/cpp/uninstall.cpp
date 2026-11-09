@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <sys/file.h>
 #include <sys/inotify.h>
 #include <sys/stat.h>
 #include <android/log.h>
@@ -244,7 +245,7 @@ int startObserver(void *p_buf) {
     // 创建锁文件，通过检测加锁状态来保证只有一个卸载监听进程
     int lockFileDescriptor = open(APP_LOCK_FILE, O_RDONLY);
     if (lockFileDescriptor == -1) {
-        lockFileDescriptor = open(APP_LOCK_FILE, O_CREAT);
+        lockFileDescriptor = open(APP_LOCK_FILE, O_CREAT, S_IRUSR | S_IWUSR);
         LOGD("create app lock file");
     }
     int lockRet = flock(lockFileDescriptor, LOCK_EX | LOCK_NB);
@@ -336,6 +337,7 @@ int isProcessAlive(const char *pid) {
         }
 
         LOGD("process is not alive");
+        return ERROR;
     } else {
         LOGD("not read saved pid");
         return ERROR;
