@@ -7,6 +7,8 @@
 
 通过 `fork()` 出一个原生子进程，用 `inotify` 监听 `/data/data/<包名>`，在应用被卸载后打开反馈网页 / 上报统计，从而实现「监听自身卸载」。
 
+[**下载示例 APK**](https://github.com/venshine/AppUninstall/releases/download/1.1/AppUninstall-sample-1.1.apk)
+
 ## 截图
 
 <img src="screenshot/demo.gif" width="300" alt="AppUninstall demo" />

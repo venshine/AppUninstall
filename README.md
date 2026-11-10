@@ -7,6 +7,8 @@
 
 Detect your own app being uninstalled on Android by forking a native process that watches `/data/data/<package>` with `inotify`, then opens a feedback page / reports statistics.
 
+[**Download the sample APK**](https://github.com/venshine/AppUninstall/releases/download/1.1/AppUninstall-sample-1.1.apk)
+
 ## ScreenShot
 
 <img src="screenshot/demo.gif" width="300" alt="AppUninstall demo" />
