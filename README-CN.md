@@ -12,6 +12,14 @@ Android 不会在应用被卸载时回调你的代码，留下的子进程也会
 | [`legacy`](legacy) | 2016 年的原生子进程演示，原样保留。在现代 Android 上不可靠，详见 [legacy/README-CN.md](legacy/README-CN.md) |
 | [`common`](common) | `app` 与 `observer` 共用的主题、字体和界面工具 |
 
+## 下载
+
+APK 附在[最新版 Release](https://github.com/venshine/AppUninstall/releases/latest) 里（需要 Android 6.0 / API 23 及以上）：
+
+- `AppUninstall-sample-X.Y.apk`：演示 App。构建时没有 `google-services.json`，FCM 和 Analytics 会显示「未配置」；想试这两项，请用自己的 Firebase 项目从源码构建（见[跑起来](#跑起来)）。
+- `AppUninstall-observer-X.Y.apk`：观察者 App。
+- `AppUninstall-legacy-X.Y.apk`：2016 年的旧演示。
+
 ## 截图
 
 <img src="screenshot/demo.gif" width="300" alt="AppUninstall 演示" />

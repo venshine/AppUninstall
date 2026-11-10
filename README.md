@@ -12,6 +12,14 @@ Android does not call your code when your app is uninstalled, and a process you 
 | [`legacy`](legacy) | The 2016 native-process demo, kept as it was. It does not work reliably on modern Android, see [legacy/README.md](legacy/README.md) |
 | [`common`](common) | Shared theme, fonts and UI helpers for `app` and `observer` |
 
+## Download
+
+APKs are attached to the [latest release](https://github.com/venshine/AppUninstall/releases/latest) (Android 6.0 / API 23 or later):
+
+- `AppUninstall-sample-X.Y.apk`: the demo app. It is built without `google-services.json`, so FCM and Analytics show "not configured"; to try them, build from source with your own Firebase project (see [Try it](#try-it)).
+- `AppUninstall-observer-X.Y.apk`: the observer app.
+- `AppUninstall-legacy-X.Y.apk`: the 2016 demo.
+
 ## Screenshots
 
 <img src="screenshot/demo.gif" width="300" alt="AppUninstall demo" />
