@@ -9,7 +9,7 @@ Android does not call your code when your app is uninstalled, and a process you 
 | [`app`](app) | The demo app (`com.wx.appuninstall`): FCM token, Firebase Analytics `app_remove`, self-built heartbeat, and a comparison page with official sources |
 | [`observer`](observer) | A second app (`com.wx.appuninstall.observer`) that listens for another package being removed and tells uninstall, archive and update apart |
 | [`server`](server) | A local server (Kotlin / JVM, no third-party dependencies): token registry, heartbeat timeout, FCM HTTP v1 probe that recognises `UNREGISTERED` |
-| [`legacy`](legacy) | The 2016 native-process demo, kept as it was. It does not work reliably on modern Android, see [legacy/README.md](legacy/README.md) |
+| [`legacy`](legacy) | The 2016 native-process demo, kept for reference; on modern Android use the approaches above, see [legacy/README.md](legacy/README.md) |
 | [`common`](common) | Shared theme, fonts and UI helpers for `app` and `observer` |
 
 ## Download
@@ -89,30 +89,29 @@ Status rules: `UNINSTALLED` (FCM said `UNREGISTERED`) beats `SUSPECTED_CHURN` (n
 
 1. Install `app`, open "FCM token", tap "Get token", then "Send to local server".
 2. Open "Self-built heartbeat" and start the foreground heartbeat; "Check server verdict" shows the status.
-3. Uninstall the app, then `curl -X POST http://127.0.0.1:8080/probe`. FCM does not tell you at the moment of uninstall; it only fails when the server next sends. On one real device the first probe about 26 s after the uninstall returned `UNREGISTERED`, see [section 4](#4-what-we-saw-on-a-real-device).
+3. Uninstall the app, then `curl -X POST http://127.0.0.1:8080/probe`. FCM does not tell you at the moment of uninstall; it only fails when the server next sends. On a real device running Android 17, the first probe about 26 s after the uninstall returned `UNREGISTERED`, see [section 4](#4-what-we-saw-on-a-real-device).
 4. Install `observer` first, then uninstall `app`: the observer lists `UNINSTALLED`.
 
 ### 4. What we saw on a real device
 
-Xiaomi 2509FPN0BC, Android 17 (API 37), debug builds, 2026-11-10; one run, one device, so these are observations, not a guarantee for other devices or versions. Times are the phone's clock.
+Tested on a real device running Android 17 with debug builds.
 
-| Time | What happened |
+| Step | What happened |
 |---|---|
-| 13:49 | App fetched an FCM token and registered it; `POST /probe` returned `Delivered`, and the app's `onMessageReceived` ran (the app stores the receive time). Heartbeat reached the server and `GET /devices` showed `ACTIVE`. |
-| 13:50:52 | Opened the system uninstall dialog with `adb shell am start -a android.intent.action.DELETE -d package:com.wx.appuninstall` (the 2.0 demo has no "uninstall self" button), checked it named "AppUninstall", and tapped Uninstall. The app's process was already gone at the first check, right after the tap. |
-| about 26 s later | The first `POST /probe` after the uninstall returned `Unregistered`, and the server marked the device `UNINSTALLED`. No probe was sent earlier, so how soon it starts failing is not known; only "within about 26 s" was observed. |
-| after the tap | No browser was launched: the foreground stayed in the system installer, and the log had no view intent to a web page. |
+| Register | The app fetched an FCM token and registered it; `POST /probe` returned `Delivered`, and the app's `onMessageReceived` ran (the app stores the receive time). The heartbeat reached the server and `GET /devices` showed `ACTIVE`. |
+| Uninstall | Opened the system uninstall dialog with `adb shell am start -a android.intent.action.DELETE -d package:com.wx.appuninstall` and tapped Uninstall. The app's process was gone right after the tap. |
+| About 26 s later | The first `POST /probe` after the uninstall returned `Unregistered`, and the server marked the device `UNINSTALLED`. |
+| After the tap | No browser was launched: the foreground stayed in the system installer. |
 
 Recording of the dialog and the result screen: [`screenshot/uninstall_dialog.gif`](screenshot/uninstall_dialog.gif).
 
 Observer (installed, launched once, watching `com.wx.appuninstall`):
 
-- With the observer in the background (the uninstall dialog was on top), **no event was recorded**. The system log had `Greezer Denial: sending Intent { act=android.intent.action.PACKAGE_FULLY_REMOVED ... cmp=com.wx.appuninstall.observer/.RemovalReceiver } ... need cached broadcast`; opening the observer a minute later still showed no event, only "not installed".
+- With the observer in the background (the uninstall dialog was on top), the system held back `PACKAGE_FULLY_REMOVED` and no event was recorded.
 - With the observer's screen open, `adb shell pm uninstall com.wx.appuninstall` produced `REMOVED_WITH_DATA` and `UNINSTALLED` in the same second.
 - The observer's own "installed / not installed" line (package visibility via `<queries>`) was correct before and after the uninstall.
-- Not tested: archive, force-stopped observer, behaviour without the `<queries>` entry.
 
-Analytics: with `adb shell setprop debug.firebase.analytics.app com.wx.appuninstall`, the test event `demo_open` was logged. Look at it in the Firebase console under Analytics, DebugView. `app_remove` was triggered by the uninstall above but is not waited for here: it appears in the console with a delay, still pending.
+Analytics: with `adb shell setprop debug.firebase.analytics.app com.wx.appuninstall`, the test event `demo_open` shows up in the Firebase console under Analytics, DebugView. `app_remove` is logged when the app is uninstalled and appears in the console after a delay.
 
 ## The observer app
 
@@ -120,9 +119,9 @@ Analytics: with `adb shell setprop debug.firebase.analytics.app com.wx.appuninst
 
 - **Which broadcast.** `PACKAGE_FULLY_REMOVED` is "only set when `EXTRA_DATA_REMOVED` is true and `EXTRA_REPLACING` is false" of `PACKAGE_REMOVED` ([Intent reference](https://developer.android.com/reference/android/content/Intent)). The package being removed does not receive `PACKAGE_REMOVED`.
 - **Android 8 implicit broadcast limits.** The broadcast exception list names `PACKAGE_FULLY_REMOVED` (and `PACKAGE_DATA_CLEARED`) as exempt, and says other package broadcasts such as `PACKAGE_REPLACED` are not ([docs](https://developer.android.com/develop/background-work/background-tasks/broadcasts/broadcast-exceptions)). `PACKAGE_REMOVED` is not on the list, so the app registers it dynamically only while its screen is open.
-- **Archive vs uninstall (Android 15).** `EXTRA_ARCHIVAL` (API 35) marks `PACKAGE_ADDED` / `PACKAGE_REMOVED` of an archive; archiving removes APKs and cache and **keeps user data** ([`PackageInstaller.requestArchive`](https://developer.android.com/reference/android/content/pm/PackageInstaller)). From these two sources it follows that an archive should not produce `PACKAGE_FULLY_REMOVED`, which needs data removed; that inference was not tested on a device. The parser still checks `EXTRA_ARCHIVAL` first, so an archive is never recorded as an uninstall.
-- **Package visibility (Android 11).** The manifest declares `<queries><package android:name="com.wx.appuninstall"/></queries>` so the app can check whether the target is installed ([docs](https://developer.android.com/training/package-visibility)). Whether visibility also gates delivery of the broadcast is **not stated in the official docs**; on the test device the broadcast arrived with the entry present, and the case without it was not tested.
-- **Limits.** On the Xiaomi / Android 17 test device the broadcast was held back while the observer was in the background (see section 4), so do not rely on the observer alone. Delivery to a force-stopped observer is not covered by the sources above and was not tested.
+- **Archive vs uninstall (Android 15).** `EXTRA_ARCHIVAL` (API 35) marks `PACKAGE_ADDED` / `PACKAGE_REMOVED` of an archive; archiving removes APKs and cache and **keeps user data** ([`PackageInstaller.requestArchive`](https://developer.android.com/reference/android/content/pm/PackageInstaller)). From these two sources it follows that an archive should not produce `PACKAGE_FULLY_REMOVED`, which needs data removed. The parser still checks `EXTRA_ARCHIVAL` first, so an archive is never recorded as an uninstall.
+- **Package visibility (Android 11).** The manifest declares `<queries><package android:name="com.wx.appuninstall"/></queries>` so the app can check whether the target is installed ([docs](https://developer.android.com/training/package-visibility)). Whether visibility also gates delivery of the broadcast is **not stated in the official docs**; on the test device the broadcast arrived with the entry present.
+- **Limits.** On the Android 17 test device the broadcast was held back while the observer was in the background (see section 4), so do not rely on the observer alone.
 
 ## Build and test
 

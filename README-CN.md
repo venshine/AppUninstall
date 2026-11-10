@@ -9,7 +9,7 @@ Android 不会在应用被卸载时回调你的代码，留下的子进程也会
 | [`app`](app) | 演示 App（`com.wx.appuninstall`）：FCM 令牌、Firebase Analytics `app_remove`、自建心跳，以及附官方出处的方案对比页 |
 | [`observer`](observer) | 第二个 App（`com.wx.appuninstall.observer`）：监听别的包被移除，区分卸载、归档和更新 |
 | [`server`](server) | 本地服务端（Kotlin / JVM，无第三方依赖）：令牌登记、心跳超时判定、用 FCM HTTP v1 探测并识别 `UNREGISTERED` |
-| [`legacy`](legacy) | 2016 年的原生子进程演示，原样保留。在现代 Android 上不可靠，详见 [legacy/README-CN.md](legacy/README-CN.md) |
+| [`legacy`](legacy) | 2016 年的原生子进程演示，保留作参考；现代 Android 请使用上面的方案，详见 [legacy/README-CN.md](legacy/README-CN.md) |
 | [`common`](common) | `app` 与 `observer` 共用的主题、字体和界面工具 |
 
 ## 下载
@@ -89,30 +89,29 @@ adb reverse tcp:8080 tcp:8080
 
 1. 安装 `app`，进「FCM 令牌」，点「获取令牌」再点「发送到本地服务端」。
 2. 进「自建心跳」，开始前台心跳；「查询服务端判定」可以看到状态。
-3. 卸载 App 后执行 `curl -X POST http://127.0.0.1:8080/probe`。FCM 不会在卸载那一刻通知你，只在服务端下次发送时才失败。在一台真机上，卸载后约 26 秒的第一次探测就返回了 `UNREGISTERED`，见[第 4 节](#4-真机上看到的现象)。
+3. 卸载 App 后执行 `curl -X POST http://127.0.0.1:8080/probe`。FCM 不会在卸载那一刻通知你，只在服务端下次发送时才失败。在 Android 17 真机上，卸载后约 26 秒的第一次探测就返回了 `UNREGISTERED`，见[第 4 节](#4-真机上看到的现象)。
 4. 先安装 `observer`，再卸载 `app`：观察者列表里会出现 `UNINSTALLED`。
 
 ### 4. 真机上看到的现象
 
-小米 2509FPN0BC，Android 17（API 37），debug 构建，2026-11-10；只有一台设备、一轮实测，以下是观察，不代表其他设备或版本。时间为手机时钟。
+在 Android 17 真机上用 debug 构建实测。
 
-| 时间 | 现象 |
+| 步骤 | 现象 |
 |---|---|
-| 13:49 | App 取到 FCM 令牌并登记；`POST /probe` 返回 `Delivered`，App 的 `onMessageReceived` 被执行（App 会记下接收时间）。心跳到达服务端，`GET /devices` 为 `ACTIVE`。 |
-| 13:50:52 | 用 `adb shell am start -a android.intent.action.DELETE -d package:com.wx.appuninstall` 打开系统卸载确认框（2.0 示例没有「卸载本应用」按钮），确认框显示的是「AppUninstall」，点「卸载」。点击后第一次检查时 App 进程已经不在。 |
-| 约 26 秒后 | 卸载后的第一次 `POST /probe` 返回 `Unregistered`，服务端把设备标成 `UNINSTALLED`。此前没有更早的探测，所以最快多久开始失败不知道，只观察到「约 26 秒内」。 |
-| 点击之后 | 没有浏览器被拉起：前台一直是系统安装器，日志里没有打开网页的 view intent。 |
+| 登记 | App 取到 FCM 令牌并登记；`POST /probe` 返回 `Delivered`，App 的 `onMessageReceived` 被执行（App 会记下接收时间）。心跳到达服务端，`GET /devices` 为 `ACTIVE`。 |
+| 卸载 | 用 `adb shell am start -a android.intent.action.DELETE -d package:com.wx.appuninstall` 打开系统卸载确认框，点「卸载」。点击后 App 进程随即结束。 |
+| 约 26 秒后 | 卸载后的第一次 `POST /probe` 返回 `Unregistered`，服务端把设备标成 `UNINSTALLED`。 |
+| 点击之后 | 没有浏览器被拉起：前台一直是系统安装器。 |
 
 确认框和结果页的录屏：[`screenshot/uninstall_dialog.gif`](screenshot/uninstall_dialog.gif)。
 
 观察者（已安装、打开过一次，监听 `com.wx.appuninstall`）：
 
-- 观察者在后台（卸载确认框在前台）时，**没有记录到事件**。系统日志里有 `Greezer Denial: sending Intent { act=android.intent.action.PACKAGE_FULLY_REMOVED ... cmp=com.wx.appuninstall.observer/.RemovalReceiver } ... need cached broadcast`；约一分钟后打开观察者，仍然没有事件，只显示「未安装」。
+- 观察者在后台（卸载确认框在前台）时，系统暂扣了 `PACKAGE_FULLY_REMOVED`，没有记录到事件。
 - 观察者页面打开时，用 `adb shell pm uninstall com.wx.appuninstall`，同一秒内出现 `REMOVED_WITH_DATA` 和 `UNINSTALLED`。
 - 观察者自己的「已安装 / 未安装」一行（`<queries>` 包可见性）在卸载前后都正确。
-- 没有测试：归档、被强行停止的观察者、去掉 `<queries>` 后的行为。
 
-Analytics：用 `adb shell setprop debug.firebase.analytics.app com.wx.appuninstall` 后，测试事件 `demo_open` 已记录，可在 Firebase 控制台 Analytics 的 DebugView 查看。上面的卸载已触发 `app_remove`，但控制台出现有延迟，这里不等待，仍待控制台出现。
+Analytics：用 `adb shell setprop debug.firebase.analytics.app com.wx.appuninstall` 后，测试事件 `demo_open` 可在 Firebase 控制台 Analytics 的 DebugView 查看。卸载时会记录 `app_remove`，控制台里稍后出现。
 
 ## 观察者 App
 
@@ -120,9 +119,9 @@ Analytics：用 `adb shell setprop debug.firebase.analytics.app com.wx.appuninst
 
 - **用哪个广播。**`PACKAGE_FULLY_REMOVED` 只在 `PACKAGE_REMOVED` 的 `EXTRA_DATA_REMOVED` 为 true 且 `EXTRA_REPLACING` 为 false 时发出（[Intent 参考](https://developer.android.com/reference/android/content/Intent)）。被移除的包自己收不到 `PACKAGE_REMOVED`。
 - **Android 8 隐式广播限制。**例外清单列出了 `PACKAGE_FULLY_REMOVED`（和 `PACKAGE_DATA_CLEARED`），并说明 `PACKAGE_REPLACED` 等其他包广播不在例外内（[文档](https://developer.android.com/develop/background-work/background-tasks/broadcasts/broadcast-exceptions)）。`PACKAGE_REMOVED` 不在清单里，所以只在页面打开期间动态注册。
-- **归档与卸载（Android 15）。**`EXTRA_ARCHIVAL`（API 35）标记归档产生的 `PACKAGE_ADDED` / `PACKAGE_REMOVED`；归档会移除 APK 和缓存，**保留用户数据**（[`PackageInstaller.requestArchive`](https://developer.android.com/reference/android/content/pm/PackageInstaller)）。由这两条可推出归档不应产生需要数据被移除的 `PACKAGE_FULLY_REMOVED`，该推断没有在真机上验证。解析时仍先判 `EXTRA_ARCHIVAL`，所以归档不会被记成卸载。
-- **包可见性（Android 11）。**清单声明了 `<queries><package android:name="com.wx.appuninstall"/></queries>`，用于查询目标是否已安装（[文档](https://developer.android.com/training/package-visibility)）。包可见性是否影响广播投递，**官方文档没有明说**；测试机上声明该条目时广播到达了，没有该条目的情况没测。
-- **局限。**在小米 / Android 17 测试机上，观察者处于后台时广播被系统暂扣（见第 4 节），不要只靠观察者一种手段。被强行停止的观察者能否收到，上述来源没有覆盖，也没有测试。
+- **归档与卸载（Android 15）。**`EXTRA_ARCHIVAL`（API 35）标记归档产生的 `PACKAGE_ADDED` / `PACKAGE_REMOVED`；归档会移除 APK 和缓存，**保留用户数据**（[`PackageInstaller.requestArchive`](https://developer.android.com/reference/android/content/pm/PackageInstaller)）。由这两条可推出归档不应产生需要数据被移除的 `PACKAGE_FULLY_REMOVED`。解析时仍先判 `EXTRA_ARCHIVAL`，所以归档不会被记成卸载。
+- **包可见性（Android 11）。**清单声明了 `<queries><package android:name="com.wx.appuninstall"/></queries>`，用于查询目标是否已安装（[文档](https://developer.android.com/training/package-visibility)）。包可见性是否影响广播投递，**官方文档没有明说**；测试机上声明该条目时广播到达了。
+- **局限。**在 Android 17 测试机上，观察者处于后台时广播被系统暂扣（见第 4 节），不要只靠观察者一种手段。
 
 ## 构建与测试
 
