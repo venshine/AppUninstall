@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 只允许明文访问本机回环地址：手机通过 adb reverse 把端口转到电脑上的演示服务端。
+     依据：https://developer.android.com/privacy-and-security/security-config （Cleartext traffic） -->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">127.0.0.1</domain>
+        <domain includeSubdomains="false">localhost</domain>
+    </domain-config>
+</network-security-config>

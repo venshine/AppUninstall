@@ -1,2 +1,3 @@
 /build
-/externalNativeBuild
+# Firebase 配置文件含项目标识，不入库；真实文件放 .private/keys/
+/google-services.json

@@ -30,10 +30,10 @@
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, TAG, __VA_ARGS__)
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, TAG, __VA_ARGS__)
 
-static const char APP_DIR[] = "/data/data/com.wx.appuninstall";
-static const char APP_FILES_DIR[] = "/data/data/com.wx.appuninstall/files";
-static const char APP_OBSERVED_FILE[] = "/data/data/com.wx.appuninstall/files/observedFile";
-static const char APP_LOCK_FILE[] = "/data/data/com.wx.appuninstall/files/lockFile";
+static const char APP_DIR[] = "/data/data/com.wx.appuninstall.legacy";
+static const char APP_FILES_DIR[] = "/data/data/com.wx.appuninstall.legacy/files";
+static const char APP_OBSERVED_FILE[] = "/data/data/com.wx.appuninstall.legacy/files/observedFile";
+static const char APP_LOCK_FILE[] = "/data/data/com.wx.appuninstall.legacy/files/lockFile";
 static const char *HOST_ADDR = "www.baidu.com";
 static const char *SERVER_ADDR = "http://www.baidu.com";
 static const int OK = 0;

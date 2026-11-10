@@ -1,0 +1,5 @@
+<resources>
+    <string name="back">返回</string>
+    <string name="theme_to_dark">切换到深色模式</string>
+    <string name="theme_to_light">切换到浅色模式</string>
+</resources>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="card_fcm" type="id" />
+    <item name="card_analytics" type="id" />
+    <item name="card_heartbeat" type="id" />
+    <item name="card_compare" type="id" />
+    <item name="firebase_chip" type="id" />
+    <item name="fcm_token" type="id" />
+    <item name="fcm_fetch" type="id" />
+    <item name="fcm_register" type="id" />
+    <item name="fcm_result" type="id" />
+    <item name="analytics_id" type="id" />
+    <item name="analytics_enable" type="id" />
+    <item name="analytics_event" type="id" />
+    <item name="analytics_result" type="id" />
+    <item name="hb_install_id" type="id" />
+    <item name="hb_foreground" type="id" />
+    <item name="hb_schedule" type="id" />
+    <item name="hb_cancel" type="id" />
+    <item name="hb_check" type="id" />
+    <item name="hb_result" type="id" />
+    <item name="compare_list" type="id" />
+</resources>

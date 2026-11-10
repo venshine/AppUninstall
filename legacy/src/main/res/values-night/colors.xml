@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 深色主题色板，颜色名与 values/colors.xml 一一对应 -->
+<resources>
+    <color name="bg">#0F1115</color>
+    <color name="surface">#171A20</color>
+    <color name="border">#23272F</color>
+    <color name="line">#2A2F38</color>
+    <color name="text">#F2F1EC</color>
+    <color name="text_muted">#9AA0AB</color>
+    <color name="text_dim">#8A919C</color>
+    <color name="text_sub">#C9CDD4</color>
+    <color name="code_text">#E6E3DA</color>
+    <color name="accent">#FF7A3D</color>
+    <color name="accent_ink">#FF7A3D</color>
+    <color name="accent_soft">#1FFF7A3D</color>
+    <color name="on_accent">#1A0E06</color>
+    <color name="ok_ink">#6FD39A</color>
+    <color name="bad_ink">#FF8A80</color>
+    <color name="ripple">#1FFFFFFF</color>
+</resources>

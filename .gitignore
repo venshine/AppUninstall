@@ -58,3 +58,7 @@ gradle-app.setting
 .private/
 .tmp/
 .kotlin/
+
+# Firebase 配置与服务账号密钥（真实文件放 .private/keys/）
+google-services.json
+*service-account*.json

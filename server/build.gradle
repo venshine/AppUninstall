@@ -1,0 +1,33 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm'
+    id 'application'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
+    }
+}
+
+application {
+    mainClass = 'com.wx.appuninstall.server.MainKt'
+}
+
+// 零运行时依赖：HTTP 服务、HTTP 客户端、RSA 签名全部使用 JDK 自带实现
+dependencies {
+    testImplementation 'junit:junit:4.13.2'
+}
+
+tasks.withType(Test).configureEach {
+    useJUnit()
+}
+
+// gradlew :server:run 时以仓库根目录为工作目录，默认的 .private/keys/ 路径才对得上
+tasks.named('run') {
+    workingDir = rootProject.projectDir
+}

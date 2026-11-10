@@ -1,0 +1,21 @@
+plugins {
+    id 'com.android.library'
+}
+
+android {
+    namespace = 'com.wx.appuninstall.common'
+    compileSdk = 36
+
+    defaultConfig {
+        minSdk = 23
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    // 示例界面公共外观：AppCompat DayNight 主题，不引入 Material Components
+    api 'androidx.appcompat:appcompat:1.8.0'
+}

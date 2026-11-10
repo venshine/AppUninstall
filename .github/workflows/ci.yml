@@ -18,4 +18,4 @@ jobs:
           distribution: temurin
           java-version: 21
       - uses: gradle/actions/setup-gradle@v6
-      - run: ./gradlew :app:testDebugUnitTest :app:assembleDebug
+      - run: ./gradlew :legacy:testDebugUnitTest :legacy:assembleDebug :app:testDebugUnitTest :app:assembleDebug :observer:testDebugUnitTest :observer:assembleDebug :server:test

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="target_input" type="id" />
+    <item name="target_save" type="id" />
+    <item name="target_status" type="id" />
+    <item name="events_container" type="id" />
+    <item name="events_clear" type="id" />
+</resources>

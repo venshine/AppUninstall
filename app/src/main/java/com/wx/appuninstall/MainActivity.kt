@@ -17,55 +17,61 @@ package com.wx.appuninstall
 
 import android.app.Activity
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
-import android.view.View
 import android.widget.ImageView
-import android.widget.TextView
 import androidx.annotation.DrawableRes
 import androidx.annotation.IdRes
 import androidx.annotation.StringRes
+import com.wx.appuninstall.common.BaseActivity
+import com.wx.appuninstall.common.R as CR
+import com.wx.appuninstall.common.Ui
+import com.wx.appuninstall.common.Ui.add
 
 /**
- * 首页：说明这是 2016 年的技术演示，以及它在当前系统上的预期结果；四个演示页入口
+ * 首页：说明系统不提供卸载回调，列出本应用演示的三种事后感知方案和对比页
  *
  * @author venshine
  */
 class MainActivity : BaseActivity() {
 
-    /** 版本号只在 app/build.gradle 的 versionName 维护一处 */
-    private val version: String by lazy {
-        packageManager.getPackageInfo(packageName, 0).versionName.orEmpty()
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        findViewById<View>(R.id.source_button).setOnClickListener { openUrl(SOURCE_URL) }
-        findViewById<TextView>(R.id.version_chip).text = "v$version"
-        findViewById<TextView>(R.id.preview_device).text =
-            getString(R.string.home_device, Build.VERSION.RELEASE, Build.VERSION.SDK_INT)
-        findViewById<View>(R.id.card_principle).setOnClickListener { open(PrincipleActivity::class.java) }
-        bindCard(R.id.card_watch, R.drawable.ic_pulse, R.string.demo_watch, R.string.demo_watch_desc,
-            WatchActivity::class.java)
-        bindCard(R.id.card_uninstall, R.drawable.ic_trash, R.string.demo_uninstall, R.string.demo_uninstall_desc,
-            UninstallActivity::class.java)
-        bindCard(R.id.card_alternatives, R.drawable.ic_list, R.string.demo_alternatives,
-            R.string.demo_alternatives_desc, AlternativesActivity::class.java)
+        val version = packageManager.getPackageInfo(packageName, 0).versionName.orEmpty()
+        val page = buildPage(getString(R.string.app_name), "v$version", home = true)
+
+        page.add(Ui.text(this, CR.style.Text_H1, getString(R.string.home_title)), 24)
+        page.add(Ui.body(this, getString(R.string.home_desc)), 12)
+
+        val configured = FirebaseStatus.isConfigured(this)
+        page.add(Ui.chip(this, "Firebase " + getString(if (configured) R.string.configured else R.string.not_configured), configured).apply {
+            id = R.id.firebase_chip
+        }, 16, wrap = true)
+        page.add(Ui.mono(this, getString(R.string.home_server, ServerConfig.BASE_URL)), 8)
+
+        card(page, R.id.card_fcm, CR.drawable.ic_pulse, R.string.demo_fcm, R.string.demo_fcm_desc, FcmActivity::class.java)
+        card(page, R.id.card_analytics, CR.drawable.ic_flow, R.string.demo_analytics, R.string.demo_analytics_desc, AnalyticsActivity::class.java)
+        card(page, R.id.card_heartbeat, CR.drawable.ic_trash, R.string.demo_heartbeat, R.string.demo_heartbeat_desc, HeartbeatActivity::class.java)
+        card(page, R.id.card_compare, CR.drawable.ic_list, R.string.demo_compare, R.string.demo_compare_desc, CompareActivity::class.java)
+
+        page.add(Ui.note(this, getString(R.string.home_observer)), 20)
+        page.add(Ui.caption(this, getString(R.string.home_author)), 16)
     }
 
-    private fun bindCard(@IdRes id: Int, @DrawableRes icon: Int, @StringRes title: Int, @StringRes desc: Int,
-                         target: Class<out Activity>) {
-        val card = findViewById<View>(id)
-        card.findViewById<ImageView>(R.id.card_icon).setImageResource(icon)
-        card.findViewById<TextView>(R.id.card_title).setText(title)
-        card.findViewById<TextView>(R.id.card_desc).setText(desc)
-        card.setOnClickListener { open(target) }
-    }
-
-    private fun open(target: Class<out Activity>) = startActivity(Intent(this, target))
-
-    private companion object {
-        const val SOURCE_URL = "https://github.com/venshine/AppUninstall"
+    private fun card(parent: android.widget.LinearLayout, @IdRes id: Int, @DrawableRes icon: Int,
+                     @StringRes title: Int, @StringRes desc: Int, target: Class<out Activity>) {
+        val card = Ui.card(this).apply {
+            this.id = id
+            isClickable = true
+            isFocusable = true
+            setOnClickListener { startActivity(Intent(this@MainActivity, target)) }
+        }
+        card.addView(ImageView(this).apply {
+            setImageResource(icon)
+            imageTintList = android.content.res.ColorStateList.valueOf(getColor(CR.color.accent_ink))
+            importantForAccessibility = android.view.View.IMPORTANT_FOR_ACCESSIBILITY_NO
+        }, android.widget.LinearLayout.LayoutParams(Ui.dp(this, 24), Ui.dp(this, 24)))
+        card.add(Ui.text(this, CR.style.Text_CardTitle, getString(title)), 14)
+        card.add(Ui.text(this, CR.style.Text_CardDesc, getString(desc)), 6)
+        parent.add(card, 12)
     }
 }

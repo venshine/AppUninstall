@@ -2,95 +2,139 @@
 
 [English](README.md)
 
-> **这是 2016 年的技术演示，其原理在现代 Android 上已不可靠。**
-> 它为 Android 4.x / 5.x 编写，现在仍保留开放作参考，并能用当前工具链编译，但不是可用于生产的方案。详见[现代 Android 上的限制](#现代-android-上的限制)和[现代替代方案](#现代替代方案)。
+Android 不会在应用被卸载时回调你的代码，留下的子进程也会随应用一起被杀。本仓库收集的是**今天真正可行**的「感知应用被卸载」方案，做成可以在手机上跑的演示；2016 年的 `fork` + `inotify` 旧演示保留作参考。
 
-通过 `fork()` 出一个原生子进程，用 `inotify` 监听 `/data/data/<包名>`，在应用被卸载后打开反馈网页 / 上报统计，从而实现「监听自身卸载」。
-
-[**下载示例 APK**](https://github.com/venshine/AppUninstall/releases/download/1.1/AppUninstall-sample-1.1.apk)
+| 模块 | 说明 |
+|---|---|
+| [`app`](app) | 演示 App（`com.wx.appuninstall`）：FCM 令牌、Firebase Analytics `app_remove`、自建心跳，以及附官方出处的方案对比页 |
+| [`observer`](observer) | 第二个 App（`com.wx.appuninstall.observer`）：监听别的包被移除，区分卸载、归档和更新 |
+| [`server`](server) | 本地服务端（Kotlin / JVM，无第三方依赖）：令牌登记、心跳超时判定、用 FCM HTTP v1 探测并识别 `UNREGISTERED` |
+| [`legacy`](legacy) | 2016 年的原生子进程演示，原样保留。在现代 Android 上不可靠，详见 [legacy/README-CN.md](legacy/README-CN.md) |
+| [`common`](common) | `app` 与 `observer` 共用的主题、字体和界面工具 |
 
 ## 截图
 
-<img src="screenshot/demo.gif" width="300" alt="AppUninstall demo" />
+<img src="screenshot/demo.gif" width="300" alt="AppUninstall 演示" />
 
-| 首页 | 深色模式 | 原理图示 |
-|:---:|:---:|:---:|
-| <img src="screenshot/home.png" width="200" /> | <img src="screenshot/home_dark.png" width="200" /> | <img src="screenshot/principle.png" width="200" /> |
+| 首页 | 深色 | FCM 令牌 | Analytics |
+|:---:|:---:|:---:|:---:|
+| <img src="screenshot/home.png" width="200" /> | <img src="screenshot/home_dark.png" width="200" /> | <img src="screenshot/fcm.png" width="200" /> | <img src="screenshot/analytics.png" width="200" /> |
 
-| 启动监听 | 卸载本应用 | 替代方案 |
-|:---:|:---:|:---:|
-| <img src="screenshot/watch.png" width="200" /> | <img src="screenshot/uninstall.png" width="200" /> | <img src="screenshot/alternatives.png" width="200" /> |
+| 心跳 | 方案对比 | 观察者 | 观察者收到事件 |
+|:---:|:---:|:---:|:---:|
+| <img src="screenshot/heartbeat.png" width="200" /> | <img src="screenshot/compare.png" width="200" /> | <img src="screenshot/observer.png" width="200" /> | <img src="screenshot/observer_event.png" width="200" /> |
 
-[示例 App](app) 有五个页面，支持浅色和深色。卸载实测录屏见 [`screenshot/uninstall.gif`](screenshot/uninstall.gif)。
-
-## 原理（原始设计）
-
-1. 监听系统卸载广播：收不到自己的卸载广播（`ACTION_PACKAGE_REMOVED` 不会发给正在被移除的包，见 [Intent 文档](https://developer.android.com/reference/android/content/Intent#ACTION_PACKAGE_REMOVED)）。
-2. Java 线程：卸载时进程退出，线程随之销毁。
-3. 用 `fork()`（配合 `setsid()` 脱离）创建的 C 子进程，在老系统上不会随应用一起被杀；它用 [inotify](https://man7.org/linux/man-pages/man7/inotify.7.html) 监听应用数据目录下的文件，目录被删除即认为已卸载，随后上报并打开浏览器。
-
-实现步骤：`fork()` 子进程 -> 创建监听文件和锁文件（`flock`，保证只有一个监听进程）-> `inotify_init` + `inotify_add_watch` -> `read` 阻塞 -> 收到 `IN_DELETE_SELF` 后再判断应用目录是否还在（区分「清除数据」和「卸载」）-> 发送统计请求 -> 执行 `am start -a android.intent.action.VIEW -d <url>`。
-
-`uninstall.cpp` 里的反馈地址 `www.baidu.com` 只是占位。
-
-## 现代 Android 上的限制
-
-### 真机实测
-
-只在一台设备上测过一次：Xiaomi 2509FPN0BC，Android 17（API 37，HyperOS 版本 `OS4.0.5.0.XPBCNXM`），debug 包，2026-11-09。以下现象没有在其他设备或其他 Android 版本上验证。
-
-1. 在示例里点「启动监听」。`Uninstall.watch()` 返回的是很快退出的第一个子进程 pid；`ps -A` 显示真正的监听进程是孙进程（pid 24738，父进程 pid 1），和应用进程（pid 24581）同时存在，页面显示「存活」。
-2. 点示例里的「卸载本应用」，在系统卸载确认框里确认（录屏：[`screenshot/uninstall.gif`](screenshot/uninstall.gif)）。
-3. 结果：应用被卸载，该包没有任何进程残留（`ps -A` 查不到，`pm list packages` 不再列出）。`logcat` 记录了 `ActivityManager: Killing 24581:com.wx.appuninstall/u0a613 (adj 700): stop com.wx.appuninstall due to deletePackageX`、`kill: send 9 to pid -24581`，约 35 毫秒后 `Process PhantomProcessRecord {... 24738:24581:com.wx.appuninstall/u0a613} died`，即监听进程与应用同时被杀。
-4. 确认卸载后的 15 秒内，前台窗口一直是卸载前打开的另一个应用（没有浏览器窗口到前台），`logcat` 里除系统安装器自己的卸载界面外没有其他 Activity 启动。测试开始前系统里已有 `com.android.browser` 进程，pid 不变，没有被拉到前台。
-
-所以在这台设备上：监听进程没有在卸载后存活，也没有打开反馈页。
-
-### 一手来源给出的预期
-
-以下结论来自[现代替代方案](#现代替代方案)一节列出的一手来源：
-
-- **子进程会随应用一起被杀。** 包被移除时系统会杀掉其进程（`PackageFreezer` 调用 `killApplication`），杀进程走按 UID / PID 划分的 cgroup（`killProcessGroup`），不依赖进程组或会话，所以 `setsid()` 无效。具体从哪个 Android 版本开始生效：待确认（上面的真机测试只覆盖 Android 17）。
-- **后台打开浏览器受限。** 自 Android 10（API 29）起，应用除少数例外情况外不能从后台启动 Activity（[文档](https://developer.android.com/guide/components/activities/background-starts)），脱离的原生进程执行 `am start` 不在例外列表内。
-- **硬编码 `/data/data/<包名>`。** 代码只考虑了用户 0；多用户下路径是 `/data/user/<id>/<包名>`，文档也说明应用目录路径可能变化（例如迁到 adopted storage），不应写死。
-- 旧说明里「清除数据、kill 进程 5.0 以上不支持」同样源于第一条。
-- Issue #3（卸载后删除 SD 卡目录）不处理：它依赖同一个能存活的子进程，按上述限制已不成立。建议把文件放在应用专属外部目录（`getExternalFilesDir()`），不要放共享目录，以便系统随应用清理（本项目未验证）。
-
-本版本的编译修复：`flock` 需要 `#include <sys/file.h>`（issue #4 / #5）；`open(..., O_CREAT)` 必须带 mode 参数；Gradle 的 `cmake {}` 要写在 `defaultConfig` 的 `externalNativeBuild` 里（issue #8）；已弃用的 `com.wx.android.common` 依赖换成系统 API。
+FCM 令牌已部分打码。2016 年旧演示的截图见 [legacy/README-CN.md](legacy/README-CN.md)。
 
 ## 现代替代方案
 
-官方文档里没有「在卸载瞬间于客户端可靠执行代码」的方案，能做的只有事后的服务端或聚合检测：
+官方文档里没有「在卸载瞬间于客户端执行代码」的方案，能做的只有事后检测：
 
 | 方案 | 能拿到什么 | 限制 | 出处 |
 |---|---|---|---|
-| FCM 令牌失效 | 向已卸载应用的令牌发消息时，FCM 可能返回 `UNREGISTERED`（HTTP 404），据此删除令牌并标记流失 | 不实时：只有发送时才知道；Android 注册 270 天不活跃过期，一个月未连接视为陈旧 | [管理令牌](https://firebase.google.com/docs/cloud-messaging/manage-tokens)、[错误码](https://firebase.google.com/docs/reference/fcm/rest/v1/ErrorCode) |
-| Firebase Analytics `app_remove` | 仅 Android 的自动收集事件，「应用包被移除（卸载）」时记录，可用于受众 / BigQuery | 聚合分析数据；统计所有安装来源，与 Play 管理中心数字不同 | [自动收集的事件](https://support.google.com/analytics/answer/9234069) |
-| Google Play 管理中心统计 | 用户 / 设备流失、按设备 / 按用户的卸载数 | 只有聚合数据，没有单用户回调，仅限 Play 安装 | [Play 管理中心帮助](https://support.google.com/googleplay/android-developer/answer/139628) |
-| 自建服务端心跳 | 连续 N 天无心跳则判定用户可能已流失 | 启发式：分不清「卸载」和「不使用」；无官方出处（自行设计） | -- |
+| FCM 令牌失效 | 向已卸载应用的令牌发消息时，FCM 可能返回 `UNREGISTERED`（HTTP 404），据此删除令牌并标记流失 | 不实时：只有发送时才知道。官方对 `UNREGISTERED` 的解释是「令牌不再有效」，卸载只是原因之一（还有令牌过期、应用更新后收不到消息）。Android 注册 270 天不活跃过期，一个月未连接视为陈旧 | [管理令牌](https://firebase.google.com/docs/cloud-messaging/manage-tokens)、[排查错误](https://firebase.google.com/docs/cloud-messaging/error-codes)、[错误码](https://firebase.google.com/docs/reference/fcm/rest/v1/ErrorCode) |
+| Firebase Analytics `app_remove` | 仅 Android 的自动收集事件，「应用包被移除（卸载）」时记录，可用于报表和 BigQuery | 聚合数据，没有单用户回调；统计所有安装来源，与 Play 管理中心数字不同；BigQuery 数据随每日同步到达 | [自动收集的事件](https://support.google.com/analytics/answer/9234069)、[BigQuery 导出](https://firebase.google.com/docs/projects/bigquery-export)、[导出表结构](https://support.google.com/analytics/answer/7029846) |
+| 观察者 App 监听移除广播 | 近实时、按设备：`PACKAGE_FULLY_REMOVED` 会发给其他应用（不发给被移除的包本身） | 用户必须同时装了观察者。见[观察者](#观察者-app) | [Intent 参考](https://developer.android.com/reference/android/content/Intent)、[广播例外清单](https://developer.android.com/develop/background-work/background-tasks/broadcasts/broadcast-exceptions) |
+| Google Play 管理中心统计 | 用户 / 设备流失 | 只有聚合数据，没有单用户回调；「流失」也包含超过 30 天未使用的设备 | [Play 管理中心帮助](https://support.google.com/googleplay/android-developer/answer/139628) |
+| 自建服务端心跳 | 超时没有心跳就标记为疑似流失 | 启发式：分不清「卸载」和「不使用」；无官方出处（自行设计）。WorkManager 周期任务最小间隔 15 分钟 | [WorkManager](https://developer.android.com/develop/background-work/background-tasks/persistent/getting-started/define-work) |
 
 要收集反馈，建议在应用内（用户离开之前）询问，或通过邮件 / 推送触达仍能联系到的用户。
 
-## 构建
+## 跑起来
 
+### 1. 需要你做的事（Firebase）
+
+没有任何 Firebase 文件时，App 和服务端也能构建运行，FCM 与 Analytics 页显示「未配置」。要用到它们：
+
+1. 在 [Firebase 控制台](https://console.firebase.google.com)新建项目，添加一个**Android 应用**，包名 `com.wx.appuninstall`。`observer` 和 `legacy` 不使用 Firebase，不需要添加。
+2. 下载 `google-services.json`，放到 `.private/keys/google-services.json`（已被 git 忽略）。构建时会把它同步到 `app/google-services.json`（同样被忽略），并且只有该文件存在时才应用 `google-services` 插件。
+3. 服务端探测需要服务账号密钥：Firebase 控制台 -> 项目设置 -> 服务账号 -> 「生成新的私钥」，保存为 `.private/keys/firebase-service-account.json`，不要提交。
+4. 重新构建 App，首页应显示「Firebase 已配置」。
+
+### 2. 启动服务端
+
+```bash
+./gradlew :server:run
+# 可选环境变量：
+#   PORT（8080）  BIND（127.0.0.1）  HEARTBEAT_TIMEOUT_SECONDS（1800）
+#   FCM_SERVICE_ACCOUNT（服务账号 JSON 路径，默认 .private/keys/firebase-service-account.json）
 ```
-./gradlew :app:testDebugUnitTest :app:assembleDebug :app:lintDebug
+
+服务端没有鉴权，只监听回环地址。让手机通过 USB 连到它：
+
+```bash
+adb reverse tcp:8080 tcp:8080
 ```
 
-AGP 9.4.1、Gradle 9.8.2、compileSdk / targetSdk 36、minSdk 23、NDK `28.2.13676358`、CMake 3.22.1。
+（[`adb reverse`](https://developer.android.com/tools/adb) 见 `adb help`。）App 访问 `http://127.0.0.1:8080`，`network_security_config.xml` 只对回环地址放行明文（[文档](https://developer.android.com/privacy-and-security/security-config)）。
 
-## 参考
-* [http://www.cnblogs.com/zealotrouge/p/3182617.html](http://www.cnblogs.com/zealotrouge/p/3182617.html)
-* [http://www.jianshu.com/p/189e319a5c45](http://www.jianshu.com/p/189e319a5c45)
-* [http://blog.csdn.net/allen315410/article/details/42555415](http://blog.csdn.net/allen315410/article/details/42555415)
-* [http://www.netzmafia.de/skripten/unix/linux-daemon-howto.html](http://www.netzmafia.de/skripten/unix/linux-daemon-howto.html)
+| 接口 | 作用 |
+|---|---|
+| `POST /register` `{"installId","token"}` | 登记设备和 FCM 令牌 |
+| `POST /heartbeat` `{"installId"}` | 记录一次心跳 |
+| `GET /devices` | 设备及状态 `ACTIVE` / `SUSPECTED_CHURN` / `UNINSTALLED` |
+| `POST /probe` | 向所有已登记令牌发一条仅含数据的消息，返回 `UNREGISTERED` 即标记为 `UNINSTALLED`。需要服务账号 |
+
+判定规则：`UNINSTALLED`（FCM 返回 `UNREGISTERED`）优先于 `SUSPECTED_CHURN`（心跳超过阈值）优先于 `ACTIVE`；之后只要有登记或心跳，`UNINSTALLED` 标记就会清除。没带 `UNREGISTERED` 细节的 404（例如项目 ID 写错）和 `INVALID_ARGUMENT` **不会**被当成卸载。状态只在内存里。
+
+### 3. 走一遍
+
+1. 安装 `app`，进「FCM 令牌」，点「获取令牌」再点「发送到本地服务端」。
+2. 进「自建心跳」，开始前台心跳；「查询服务端判定」可以看到状态。
+3. 卸载 App 后执行 `curl -X POST http://127.0.0.1:8080/probe`。FCM 不会在卸载那一刻通知你，只在服务端下次发送时才失败。在一台真机上，卸载后约 26 秒的第一次探测就返回了 `UNREGISTERED`，见[第 4 节](#4-真机上看到的现象)。
+4. 先安装 `observer`，再卸载 `app`：观察者列表里会出现 `UNINSTALLED`。
+
+### 4. 真机上看到的现象
+
+小米 2509FPN0BC，Android 17（API 37），debug 构建，2026-11-10；只有一台设备、一轮实测，以下是观察，不代表其他设备或版本。时间为手机时钟。
+
+| 时间 | 现象 |
+|---|---|
+| 13:49 | App 取到 FCM 令牌并登记；`POST /probe` 返回 `Delivered`，App 的 `onMessageReceived` 被执行（App 会记下接收时间）。心跳到达服务端，`GET /devices` 为 `ACTIVE`。 |
+| 13:50:52 | 用 `adb shell am start -a android.intent.action.DELETE -d package:com.wx.appuninstall` 打开系统卸载确认框（2.0 示例没有「卸载本应用」按钮），确认框显示的是「AppUninstall」，点「卸载」。点击后第一次检查时 App 进程已经不在。 |
+| 约 26 秒后 | 卸载后的第一次 `POST /probe` 返回 `Unregistered`，服务端把设备标成 `UNINSTALLED`。此前没有更早的探测，所以最快多久开始失败不知道，只观察到「约 26 秒内」。 |
+| 点击之后 | 没有浏览器被拉起：前台一直是系统安装器，日志里没有打开网页的 view intent。 |
+
+确认框和结果页的录屏：[`screenshot/uninstall_dialog.gif`](screenshot/uninstall_dialog.gif)。
+
+观察者（已安装、打开过一次，监听 `com.wx.appuninstall`）：
+
+- 观察者在后台（卸载确认框在前台）时，**没有记录到事件**。系统日志里有 `Greezer Denial: sending Intent { act=android.intent.action.PACKAGE_FULLY_REMOVED ... cmp=com.wx.appuninstall.observer/.RemovalReceiver } ... need cached broadcast`；约一分钟后打开观察者，仍然没有事件，只显示「未安装」。
+- 观察者页面打开时，用 `adb shell pm uninstall com.wx.appuninstall`，同一秒内出现 `REMOVED_WITH_DATA` 和 `UNINSTALLED`。
+- 观察者自己的「已安装 / 未安装」一行（`<queries>` 包可见性）在卸载前后都正确。
+- 没有测试：归档、被强行停止的观察者、去掉 `<queries>` 后的行为。
+
+Analytics：用 `adb shell setprop debug.firebase.analytics.app com.wx.appuninstall` 后，测试事件 `demo_open` 已记录，可在 Firebase 控制台 Analytics 的 DebugView 查看。上面的卸载已触发 `app_remove`，但控制台出现有延迟，这里不等待，仍待控制台出现。
+
+## 观察者 App
+
+`observer` 在清单里静态注册 `android.intent.action.PACKAGE_FULLY_REMOVED`，默认监听 `com.wx.appuninstall`（可在界面里改）。
+
+- **用哪个广播。**`PACKAGE_FULLY_REMOVED` 只在 `PACKAGE_REMOVED` 的 `EXTRA_DATA_REMOVED` 为 true 且 `EXTRA_REPLACING` 为 false 时发出（[Intent 参考](https://developer.android.com/reference/android/content/Intent)）。被移除的包自己收不到 `PACKAGE_REMOVED`。
+- **Android 8 隐式广播限制。**例外清单列出了 `PACKAGE_FULLY_REMOVED`（和 `PACKAGE_DATA_CLEARED`），并说明 `PACKAGE_REPLACED` 等其他包广播不在例外内（[文档](https://developer.android.com/develop/background-work/background-tasks/broadcasts/broadcast-exceptions)）。`PACKAGE_REMOVED` 不在清单里，所以只在页面打开期间动态注册。
+- **归档与卸载（Android 15）。**`EXTRA_ARCHIVAL`（API 35）标记归档产生的 `PACKAGE_ADDED` / `PACKAGE_REMOVED`；归档会移除 APK 和缓存，**保留用户数据**（[`PackageInstaller.requestArchive`](https://developer.android.com/reference/android/content/pm/PackageInstaller)）。由这两条可推出归档不应产生需要数据被移除的 `PACKAGE_FULLY_REMOVED`，该推断没有在真机上验证。解析时仍先判 `EXTRA_ARCHIVAL`，所以归档不会被记成卸载。
+- **包可见性（Android 11）。**清单声明了 `<queries><package android:name="com.wx.appuninstall"/></queries>`，用于查询目标是否已安装（[文档](https://developer.android.com/training/package-visibility)）。包可见性是否影响广播投递，**官方文档没有明说**；测试机上声明该条目时广播到达了，没有该条目的情况没测。
+- **局限。**在小米 / Android 17 测试机上，观察者处于后台时广播被系统暂扣（见第 4 节），不要只靠观察者一种手段。被强行停止的观察者能否收到，上述来源没有覆盖，也没有测试。
+
+## 构建与测试
+
+```bash
+./gradlew :legacy:testDebugUnitTest :legacy:assembleDebug \
+          :app:testDebugUnitTest :app:assembleDebug :app:lintDebug \
+          :observer:testDebugUnitTest :observer:assembleDebug :observer:lintDebug \
+          :server:test
+```
+
+AGP 9.4.1、Gradle 9.8.2、Kotlin 2.2.10、compileSdk / targetSdk 36、minSdk 23。有意使用 Firebase BoM 34.19.0：BoM 35.x 的库带 Kotlin 2.4 元数据，当前 Kotlin 版本读不了。WorkManager 用 2.11.2，因为 2.12 要求 minSdk 24。
+
+单元测试覆盖：服务端判定与 FCM 响应解析（离线，响应按文档字段构造）、心跳超时规则、观察者的广播解析，以及每个页面在浅色 / 深色下的 Robolectric 冒烟测试。
 
 ## About
 * Email：venshine.cn@gmail.com
 
 ## 致谢
 
-示例 App 内置了下面两套字体，均采用 [SIL Open Font License 1.1](https://openfontlicense.org)（协议原文见 [`app/licenses/`](app/licenses)）：
+`app`、`observer`、`legacy` 内置了下面两套字体，均采用 [SIL Open Font License 1.1](https://openfontlicense.org)（协议原文见 [`common/licenses/`](common/licenses)）：
 
 * [Space Grotesk](https://github.com/floriankarsten/space-grotesk)：Copyright 2020 The Space Grotesk Project Authors
 * [JetBrains Mono](https://github.com/JetBrains/JetBrainsMono)：Copyright 2020 The JetBrains Mono Project Authors

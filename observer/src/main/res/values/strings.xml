@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name" translatable="false">AppUninstall Observer</string>
+    <string name="title">卸载观察者</string>
+    <string name="desc">本应用不能感知自己被卸载，但可以听到别的应用被移除。它监听下面这个包的移除广播，并区分卸载、归档和更新。</string>
+    <string name="target_label">监听的包名</string>
+    <string name="target_save">保存</string>
+    <string name="installed">已安装 %1$s</string>
+    <string name="not_installed">未安装</string>
+    <string name="events_title">收到的事件</string>
+    <string name="events_empty">还没有事件。卸载目标应用后这里会出现 UNINSTALLED。</string>
+    <string name="clear">清空记录</string>
+    <string name="notes">说明：\n· 静态注册 PACKAGE_FULLY_REMOVED：官方在 Android 8 隐式广播限制里列为例外，进程没在运行也能收到。\n· PACKAGE_REMOVED 不在例外清单里，只在本页打开时动态注册，用来区分归档（EXTRA_ARCHIVAL）与更新（EXTRA_REPLACING）。\n· 被强行停止的应用收不到静态广播，需要用户重新打开一次。\n· 被卸载的应用自己收不到这条广播。</string>
+    <string name="saved">已保存监听目标。</string>
+</resources>

@@ -1,0 +1,87 @@
+<resources>
+    <string name="app_name" translatable="false">AppUninstall</string>
+    <string name="back">返回</string>
+    <string name="theme_to_dark">切换到深色模式</string>
+    <string name="theme_to_light">切换到浅色模式</string>
+    <string name="view_source">查看源码</string>
+
+    <!-- 首页 -->
+    <string name="home_eyebrow" translatable="false">ANDROID · 2016 DEMO</string>
+    <string name="home_title">App 卸载监听\n一份 2016 年的技术演示</string>
+    <string name="home_desc">fork 一个原生子进程，用 inotify 监听应用数据目录被删除，以此感知自己被卸载。原理在新系统上已不可靠，仓库只作参考保留。</string>
+    <string name="home_device">本机：Android %1$s（API %2$d）</string>
+    <string name="home_expect_label">在新系统上的预期结果</string>
+    <string name="home_expect">监听进程随卸载被杀死</string>
+    <string name="home_expect_note">卸载时系统按 cgroup 杀掉整个应用，包括 fork 出的子进程，反馈页不会打开。依据见 README；作者在一台 Android 17 真机上实测结果一致，其他版本未验证。</string>
+    <string name="home_examples">演示</string>
+    <string name="home_examples_hint">4 个页面</string>
+    <string name="home_license" translatable="false">Apache-2.0</string>
+    <string name="home_author" translatable="false">© venshine</string>
+
+    <string name="demo_principle">原理图示</string>
+    <string name="demo_principle_desc">fork、inotify、卸载、反馈，分四步看懂</string>
+    <string name="demo_watch">启动监听</string>
+    <string name="demo_watch_desc">native 返回值\n监听进程是否存活</string>
+    <string name="demo_uninstall">卸载本应用</string>
+    <string name="demo_uninstall_desc">弹出系统卸载页\n看真实结果</string>
+    <string name="demo_alternatives">替代方案</string>
+    <string name="demo_alternatives_desc">FCM、Analytics、Play 管理中心，链接到 README</string>
+
+    <!-- 原理 -->
+    <string name="principle_desc">点「播放」或「下一步」。每一步先看 2016 年怎么做，再看新系统上的预期。</string>
+    <string name="step1_title">fork 子进程</string>
+    <string name="step2_title">inotify 监听</string>
+    <string name="step3_title">用户卸载</string>
+    <string name="step4_title">打开反馈页</string>
+    <string name="principle_idle">还没开始。点「播放」或「下一步」。</string>
+    <string name="principle_then_label">2016 年的做法</string>
+    <string name="principle_now_label">新系统上的预期（一台 Android 17 真机实测一致）</string>
+    <string name="step1_then">应用调用 native watch()，fork 出子进程并 setsid() 脱离会话，让它在应用进程之外继续运行。</string>
+    <string name="step1_now">fork 与 setsid 本身仍可调用，问题出在第 3 步。</string>
+    <string name="step2_then">子进程对应用数据目录下的文件加 inotify 监听，read() 阻塞等待事件，并用 flock 保证只有一个监听进程。</string>
+    <string name="step2_now">同 2016 年，监听进程可以正常启动并阻塞等待。</string>
+    <string name="step3_then">系统删除 /data/data/包名，监听文件触发 IN_DELETE_SELF；子进程再确认应用目录已不存在，才认定是卸载而不是清除数据。</string>
+    <string name="step3_now">系统删除包时会杀掉该应用的全部进程，按 cgroup 杀，不依赖会话或进程组，setsid 无效。子进程多半来不及收到事件。</string>
+    <string name="step4_then">子进程上报统计，再执行 am start 打开浏览器，显示卸载反馈页。</string>
+    <string name="step4_now">进程已被杀，通常走不到这一步；即使走到，Android 10 起也限制后台启动 Activity。</string>
+    <string name="principle_play">播放</string>
+    <string name="principle_pause">暂停</string>
+    <string name="principle_next">下一步</string>
+    <string name="principle_reset">重置</string>
+
+    <!-- 启动监听 -->
+    <string name="watch_desc">调用 Uninstall.watch()，fork 出监听进程。下面显示 native 返回值、监听进程的 pid，以及它此刻是否存活（每秒刷新）。</string>
+    <string name="watch_start">启动监听</string>
+    <string name="watch_refresh">立即刷新</string>
+    <string name="watch_return_label">native 返回值</string>
+    <string name="watch_pid_label">监听进程 pid</string>
+    <string name="watch_alive_label">监听进程</string>
+    <string name="watch_not_started">尚未调用</string>
+    <string name="watch_no_pid">未找到</string>
+    <string name="watch_alive">存活</string>
+    <string name="watch_dead">未运行</string>
+    <string name="watch_error">加载原生库失败：%1$s</string>
+    <string name="watch_note">返回值是 fork 出的第一个子进程的 pid，它很快退出；真正监听的是孙进程，pid 由它写进 files/observedFile。「存活」只说明现在还在，不代表卸载那一刻还在。</string>
+
+    <!-- 卸载 -->
+    <string name="uninstall_desc">弹出系统卸载确认页。先到「启动监听」确认监听进程在运行，再回来卸载，观察结果。</string>
+    <string name="uninstall_watch_alive">监听进程存活（pid %1$d）</string>
+    <string name="uninstall_watch_dead">监听进程未运行</string>
+    <string name="uninstall_button">卸载本应用</string>
+    <string name="uninstall_done">已确认卸载</string>
+    <string name="uninstall_cancelled">已取消，应用仍在</string>
+    <string name="uninstall_unavailable">本机没有可处理卸载的系统组件</string>
+    <string name="uninstall_expect">如果 2016 年的原理仍然有效，确认卸载后会自动打开浏览器；新系统上预期什么都不会发生。无论哪种结果，都以真机实际表现为准。</string>
+
+    <!-- 替代方案 -->
+    <string name="alt_desc">客户端没有文档化的办法在卸载瞬间执行代码，只能事后检测。点任意卡片查看 README 里的出处和限制。</string>
+    <string name="alt_fcm">FCM 令牌失效</string>
+    <string name="alt_fcm_desc">向已卸载应用的令牌发消息，FCM 可能返回 UNREGISTERED。不实时，只在发送时发现。</string>
+    <string name="alt_analytics">Firebase Analytics app_remove</string>
+    <string name="alt_analytics_desc">Android 自动收集的聚合事件，可进受众或 BigQuery。不是单用户回调。</string>
+    <string name="alt_play">Google Play 管理中心统计</string>
+    <string name="alt_play_desc">用户和设备流失趋势。只有聚合数据，仅限 Play 渠道。</string>
+    <string name="alt_heartbeat">服务端心跳</string>
+    <string name="alt_heartbeat_desc">连续多天没有心跳就判定可能流失。自行设计，分不清卸载和不使用。</string>
+    <string name="alt_readme">查看 README 的「Modern alternatives」</string>
+</resources>
