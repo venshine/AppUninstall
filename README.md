@@ -7,6 +7,20 @@
 
 Detect your own app being uninstalled on Android by forking a native process that watches `/data/data/<package>` with `inotify`, then opens a feedback page / reports statistics.
 
+## ScreenShot
+
+<img src="screenshot/demo.gif" width="300" alt="AppUninstall demo" />
+
+| Home | Dark mode | Principle |
+|:---:|:---:|:---:|
+| <img src="screenshot/home.png" width="200" /> | <img src="screenshot/home_dark.png" width="200" /> | <img src="screenshot/principle.png" width="200" /> |
+
+| Start listening | Uninstall | Alternatives |
+|:---:|:---:|:---:|
+| <img src="screenshot/watch.png" width="200" /> | <img src="screenshot/uninstall.png" width="200" /> | <img src="screenshot/alternatives.png" width="200" /> |
+
+The [sample app](app) has five pages, with light and dark themes. The uninstall test is recorded in [`screenshot/uninstall.gif`](screenshot/uninstall.gif).
+
 ## Principle (as originally designed)
 
 1. A broadcast receiver cannot hear its own uninstall (`ACTION_PACKAGE_REMOVED` is not delivered to the package being removed, see the [Intent docs](https://developer.android.com/reference/android/content/Intent#ACTION_PACKAGE_REMOVED)).
@@ -19,9 +33,22 @@ The feedback URL in `uninstall.cpp` is the placeholder `www.baidu.com`.
 
 ## Limitations on modern Android
 
-Based on the primary sources listed in the [Modern alternatives](#modern-alternatives) section (no physical device was used to verify this project):
+### Observed on a real device
 
-- **Child processes are killed with the app.** When a package is removed, the system kills its processes (`PackageFreezer` calls `killApplication`), and the process kill goes through the per-UID/PID cgroup (`killProcessGroup`), which does not depend on process group or session membership, so `setsid()` does not help. The exact Android version where this became effective is unverified.
+Tested once on one device: Xiaomi 2509FPN0BC, Android 17 (API 37, HyperOS build `OS4.0.5.0.XPBCNXM`), debug build, 2026-11-09. Nothing below is verified on any other device or Android version.
+
+1. Opened "Start listening". `Uninstall.watch()` returned the pid of a short-lived first child; `ps -A` showed the real watcher as a grandchild (pid 24738, parent pid 1) next to the app process (pid 24581), and the page showed it alive.
+2. Tapped "Uninstall this app" in the sample and confirmed the system uninstall dialog (screen recording: [`screenshot/uninstall.gif`](screenshot/uninstall.gif)).
+3. Result: the app was removed and no process of the package was left (`ps -A` empty, `pm list packages` no longer listed it). `logcat` shows `ActivityManager: Killing 24581:com.wx.appuninstall/u0a613 (adj 700): stop com.wx.appuninstall due to deletePackageX`, `kill: send 9 to pid -24581`, and about 35 ms after the kill `Process PhantomProcessRecord {... 24738:24581:com.wx.appuninstall/u0a613} died`, i.e. the watcher was killed together with the app.
+4. During the 15 seconds after confirming, the foreground window stayed on the app that was open before (no browser window came to the front), and `logcat` contains no activity start other than the system installer's own uninstall screens. A `com.android.browser` process was running before the test started and stayed the same pid; it was not brought to the front.
+
+So on this device the watcher did not survive the uninstall and no feedback page was opened.
+
+### Expected from primary sources
+
+Based on the primary sources listed in the [Modern alternatives](#modern-alternatives) section:
+
+- **Child processes are killed with the app.** When a package is removed, the system kills its processes (`PackageFreezer` calls `killApplication`), and the process kill goes through the per-UID/PID cgroup (`killProcessGroup`), which does not depend on process group or session membership, so `setsid()` does not help. The exact Android version where this became effective is unverified (the device test above only covers Android 17).
 - **Opening a browser from the background is restricted.** Since Android 10 (API 29) apps cannot start activities from the background except in a short list of cases ([docs](https://developer.android.com/guide/components/activities/background-starts)). A native `am start` from a detached process is not in that list.
 - **Hard-coded `/data/data/<package>`.** The code assumes user 0. Secondary users use `/data/user/<id>/<package>`, and the docs say app paths may change (for example, when moved to adopted storage), so they should not be hard-coded.
 - **Clear data / force stop** behavior listed in the old notes ("not supported on 5.0+") is a consequence of the first point.
@@ -45,7 +72,7 @@ For collecting feedback, ask inside the app (before the user leaves) or follow u
 ## Build
 
 ```
-./gradlew :app:assembleDebug :app:lintDebug
+./gradlew :app:testDebugUnitTest :app:assembleDebug :app:lintDebug
 ```
 
 AGP 9.4.1, Gradle 9.8.2, compileSdk / targetSdk 36, minSdk 23, NDK `28.2.13676358`, CMake 3.22.1.
@@ -59,6 +86,13 @@ AGP 9.4.1, Gradle 9.8.2, compileSdk / targetSdk 36, minSdk 23, NDK `28.2.1367635
 
 ## About
 * Email: venshine.cn@gmail.com
+
+## Credits
+
+The sample app bundles these fonts, both licensed under the [SIL Open Font License 1.1](https://openfontlicense.org) (license texts in [`app/licenses/`](app/licenses)):
+
+* [Space Grotesk](https://github.com/floriankarsten/space-grotesk): Copyright 2020 The Space Grotesk Project Authors
+* [JetBrains Mono](https://github.com/JetBrains/JetBrainsMono): Copyright 2020 The JetBrains Mono Project Authors
 
 ## License
     Copyright (C) 2016 venshine.cn@gmail.com

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 替代方案卡片，内容在 AlternativesActivity.bind 中填充 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/Card"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:clickable="true"
+    android:focusable="true"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/alt_title"
+        style="@style/Text.CardTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/alt_desc"
+        style="@style/Text.CardDesc"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:textSize="13sp" />
+</LinearLayout>

@@ -13,10 +13,10 @@ AppUninstall is a demo app, not a library: there is no JitPack coordinate and no
 ## Pre-release checks
 
 ```bash
-./gradlew :app:assembleDebug :app:lintDebug
+./gradlew :app:testDebugUnitTest :app:assembleDebug :app:lintDebug
 ```
 
-There are no unit tests. If the release claims anything about runtime behavior, it must have been checked on a real device and the Android version noted in the release notes.
+The unit tests only cover the sample screens. If the release claims anything about runtime behavior, it must have been checked on a real device and the Android version noted in the release notes.
 
 ## Tag
 
@@ -26,7 +26,7 @@ There are no unit tests. If the release claims anything about runtime behavior, 
 ## GitHub Release
 
 - Title is the version number. Notes are written in English and must repeat that this is a 2016 demo that does not work reliably on modern Android
-- Attachment: the demo APK, named `AppUninstall-X.Y.apk`
+- Attachment: the demo APK, named `AppUninstall-sample-X.Y.apk`
   - Build: `./gradlew :app:assembleDebug`; output at `app/build/outputs/apk/debug/app-debug.apk`
   - Signed with the local debug certificate, the same one used by WheelView (SHA-256 `bc4b28be…1433982`, see `WheelView/process/release.md`). Verify the certificate first when releasing from another machine
 

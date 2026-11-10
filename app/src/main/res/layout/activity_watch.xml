@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="@dimen/page_padding"
+        android:paddingTop="16dp"
+        android:paddingEnd="@dimen/page_padding"
+        android:paddingBottom="24dp">
+
+        <include layout="@layout/include_toolbar" />
+
+        <TextView
+            style="@style/Text.Body"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/watch_desc" />
+
+        <TextView
+            android:id="@+id/watch_start"
+            style="@style/Button"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_marginTop="14dp"
+            android:text="@string/watch_start" />
+
+        <LinearLayout
+            style="@style/Card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                style="@style/Text.Caption"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="0dp"
+                android:text="@string/watch_return_label" />
+
+            <TextView
+                android:id="@+id/watch_return"
+                style="@style/Text.Numeric"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:textSize="20sp" />
+
+            <TextView
+                style="@style/Text.Caption"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:text="@string/watch_pid_label" />
+
+            <TextView
+                android:id="@+id/watch_pid"
+                style="@style/Text.Numeric"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:textSize="20sp" />
+
+            <TextView
+                style="@style/Text.Caption"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:text="@string/watch_alive_label" />
+
+            <TextView
+                android:id="@+id/watch_alive"
+                style="@style/Text.Mono.Chip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/watch_refresh"
+            style="@style/Button.Outline"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_marginTop="14dp"
+            android:text="@string/watch_refresh" />
+
+        <TextView
+            style="@style/Text.Note"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/watch_note" />
+    </LinearLayout>
+</ScrollView>

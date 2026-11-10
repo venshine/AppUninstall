@@ -35,8 +35,15 @@ android {
             version = '3.22.1'
         }
     }
+    testOptions {
+        unitTests.includeAndroidResources = true
+    }
 }
 
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.8.0'
+
+    // 示例页冒烟测试；原生库不在 JVM 上加载，测试里替换掉启动监听的入口
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.robolectric:robolectric:4.17'
 }
