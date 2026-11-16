@@ -62,3 +62,8 @@ gradle-app.setting
 # Firebase 配置与服务账号密钥（真实文件放 .private/keys/）
 google-services.json
 *service-account*.json
+
+# AI 本地文档
+AGENTS.md
+CLAUDE.md
+ROADMAP.md
